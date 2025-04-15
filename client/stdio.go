@@ -114,7 +114,7 @@ func (c *StdioMCPClient) Close() error {
 		return err
 	case <-time.After(3 * time.Second):
 		if runtime.GOOS == "windows" {
-			killOnWindows(c.cmd.Process.Pid)
+			return killOnWindows(c.cmd.Process.Pid)
 		}
 		// Send SIGTERM if the process hasn't exited after 3 seconds
 		if err := c.cmd.Process.Signal(syscall.SIGTERM); err != nil {
