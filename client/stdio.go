@@ -11,6 +11,8 @@ import (
 	"os/exec"
 	"sync"
 	"sync/atomic"
+	"syscall"
+	"time"
 
 	"github.com/mark3labs/mcp-go/mcp"
 )
@@ -98,7 +100,34 @@ func (c *StdioMCPClient) Close() error {
 	if err := c.stderr.Close(); err != nil {
 		return fmt.Errorf("failed to close stderr: %w", err)
 	}
-	return c.cmd.Wait()
+
+	// Wait for the process to exit with a timeout
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- c.cmd.Wait()
+	}()
+
+	select {
+	case err := <-errChan:
+		return err
+	case <-time.After(3 * time.Second):
+		// Send SIGTERM if the process hasn't exited after 3 seconds
+		if err := c.cmd.Process.Signal(syscall.SIGTERM); err != nil {
+			return fmt.Errorf("failed to send SIGTERM: %w", err)
+		}
+
+		// Wait for another 1 second
+		select {
+		case err := <-errChan:
+			return err
+		case <-time.After(1 * time.Second):
+			// Send SIGKILL if the process still hasn't exited
+			if err := c.cmd.Process.Kill(); err != nil {
+				return fmt.Errorf("failed to send SIGKILL: %w", err)
+			}
+			return <-errChan
+		}
+	}
 }
 
 // Stderr returns a reader for the stderr output of the subprocess.
