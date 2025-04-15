@@ -11,7 +11,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/mark3labs/mcp-go/mcp"
+	"git.woa.com/copilot-chat/copilot_agent/mcp-go/mcp"
 )
 
 // resourceEntry holds both a resource and its handler

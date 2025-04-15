@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mark3labs/mcp-go/mcp"
+	"git.woa.com/copilot-chat/copilot_agent/mcp-go/mcp"
 )
 
 func TestSSEServer(t *testing.T) {

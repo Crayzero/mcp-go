@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/mark3labs/mcp-go/mcp"
+	"git.woa.com/copilot-chat/copilot_agent/mcp-go/mcp"
 )
 
 // HandleMessage processes an incoming JSON-RPC message and returns an appropriate response

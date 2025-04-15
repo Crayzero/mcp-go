@@ -7,8 +7,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/mark3labs/mcp-go/client"
-	"github.com/mark3labs/mcp-go/mcp"
+	"git.woa.com/copilot-chat/copilot_agent/mcp-go/client"
+	"git.woa.com/copilot-chat/copilot_agent/mcp-go/mcp"
 )
 
 func main() {

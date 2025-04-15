@@ -1,4 +1,4 @@
-module github.com/mark3labs/mcp-go
+module git.woa.com/copilot-chat/copilot_agent/mcp-go
 
 go 1.23
 
