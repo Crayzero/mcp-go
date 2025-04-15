@@ -566,7 +566,10 @@ func killOnWindows(pid int) error {
 	children, err := proc.Children()
 	if err == nil {
 		for _, child := range children {
-			killOnWindows(int(child.Pid)) // 递归杀子进程
+			err = killOnWindows(int(child.Pid)) // 递归杀子进程
+			if err != nil {
+				fmt.Printf("Failed to kill pid %d: %v\n", child.Pid, err)
+			}
 		}
 	}
 
@@ -576,8 +579,6 @@ func killOnWindows(pid int) error {
 		err = p.Kill()
 		if err != nil {
 			fmt.Printf("Failed to kill pid %d: %v\n", pid, err)
-		} else {
-			fmt.Printf("Killed pid %d\n", pid)
 		}
 	}
 	return err
