@@ -45,7 +45,7 @@ type CallToolRequest struct {
 	Request
 	Params struct {
 		Name      string                 `json:"name"`
-		Arguments map[string]interface{} `json:"arguments,omitempty"`
+		Arguments map[string]interface{} `json:"arguments,omitzero"`
 		Meta      *struct {
 			// If specified, the caller is requesting out-of-band progress
 			// notifications for this request (as represented by
