@@ -9,12 +9,14 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"syscall"
 	"time"
 
 	"git.woa.com/copilot-chat/copilot_agent/mcp-go/mcp"
+	"github.com/shirou/gopsutil/v3/process"
 )
 
 // StdioMCPClient implements the MCPClient interface using stdio communication.
@@ -111,6 +113,9 @@ func (c *StdioMCPClient) Close() error {
 	case err := <-errChan:
 		return err
 	case <-time.After(3 * time.Second):
+		if runtime.GOOS == "windows" {
+			killOnWindows(c.cmd.Process.Pid)
+		}
 		// Send SIGTERM if the process hasn't exited after 3 seconds
 		if err := c.cmd.Process.Signal(syscall.SIGTERM); err != nil {
 			return fmt.Errorf("failed to send SIGTERM: %w", err)
@@ -550,4 +555,30 @@ func (c *StdioMCPClient) Complete(
 	}
 
 	return &result, nil
+}
+
+func killOnWindows(pid int) error {
+	proc, err := process.NewProcess(int32(pid))
+	if err != nil {
+		return err
+	}
+	// 获取所有子进程（递归）
+	children, err := proc.Children()
+	if err == nil {
+		for _, child := range children {
+			killOnWindows(int(child.Pid)) // 递归杀子进程
+		}
+	}
+
+	// 杀掉当前进程
+	p, err := os.FindProcess(int(pid))
+	if err == nil {
+		err = p.Kill()
+		if err != nil {
+			fmt.Printf("Failed to kill pid %d: %v\n", pid, err)
+		} else {
+			fmt.Printf("Killed pid %d\n", pid)
+		}
+	}
+	return err
 }
