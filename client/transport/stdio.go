@@ -8,9 +8,13 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"runtime"
 	"sync"
+	"syscall"
+	"time"
 
 	"git.woa.com/copilot-chat/copilot_agent/mcp-go/mcp"
+	"github.com/shirou/gopsutil/v3/process"
 )
 
 // Stdio implements the transport layer of the MCP protocol using stdio communication.
@@ -107,7 +111,36 @@ func (c *Stdio) Close() error {
 	if err := c.stderr.Close(); err != nil {
 		return fmt.Errorf("failed to close stderr: %w", err)
 	}
-	return c.cmd.Wait()
+	// Wait for the process to exit with a timeout
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- c.cmd.Wait()
+	}()
+
+	select {
+	case err := <-errChan:
+		return err
+	case <-time.After(3 * time.Second):
+		if runtime.GOOS == "windows" {
+			return killOnWindows(c.cmd.Process.Pid)
+		}
+		// Send SIGTERM if the process hasn't exited after 3 seconds
+		if err := c.cmd.Process.Signal(syscall.SIGTERM); err != nil {
+			return fmt.Errorf("failed to send SIGTERM: %w", err)
+		}
+
+		// Wait for another 1 second
+		select {
+		case err := <-errChan:
+			return err
+		case <-time.After(1 * time.Second):
+			// Send SIGKILL if the process still hasn't exited
+			if err := c.cmd.Process.Kill(); err != nil {
+				return fmt.Errorf("failed to send SIGKILL: %w", err)
+			}
+			return <-errChan
+		}
+	}
 }
 
 // OnNotification registers a handler function to be called when notifications are received.
@@ -231,4 +264,31 @@ func (c *Stdio) SendNotification(
 // This can be used to capture error messages or logs from the subprocess.
 func (c *Stdio) Stderr() io.Reader {
 	return c.stderr
+}
+
+func killOnWindows(pid int) error {
+	proc, err := process.NewProcess(int32(pid))
+	if err != nil {
+		return err
+	}
+	// 获取所有子进程（递归）
+	children, err := proc.Children()
+	if err == nil {
+		for _, child := range children {
+			err = killOnWindows(int(child.Pid)) // 递归杀子进程
+			if err != nil {
+				fmt.Printf("Failed to kill pid %d: %v\n", child.Pid, err)
+			}
+		}
+	}
+
+	// 杀掉当前进程
+	p, err := os.FindProcess(int(pid))
+	if err == nil {
+		err = p.Kill()
+		if err != nil {
+			fmt.Printf("Failed to kill pid %d: %v\n", pid, err)
+		}
+	}
+	return err
 }
