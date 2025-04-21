@@ -2,9 +2,10 @@ package client
 
 import (
 	"context"
-	"github.com/mark3labs/mcp-go/client/transport"
 	"testing"
 	"time"
+
+	"git.woa.com/copilot-chat/copilot_agent/mcp-go/client/transport"
 
 	"git.woa.com/copilot-chat/copilot_agent/mcp-go/mcp"
 	"git.woa.com/copilot-chat/copilot_agent/mcp-go/server"

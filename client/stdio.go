@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/mark3labs/mcp-go/client/transport"
+	"git.woa.com/copilot-chat/copilot_agent/mcp-go/client/transport"
 )
 
 // NewStdioMCPClient creates a new stdio-based MCP client that communicates with a subprocess.

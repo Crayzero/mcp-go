@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/mark3labs/mcp-go/mcp"
+	"git.woa.com/copilot-chat/copilot_agent/mcp-go/mcp"
 )
 
 // Interface for the transport layer.

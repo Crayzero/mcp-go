@@ -8,8 +8,8 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/mark3labs/mcp-go/client/transport"
-	"github.com/mark3labs/mcp-go/mcp"
+	"git.woa.com/copilot-chat/copilot_agent/mcp-go/client/transport"
+	"git.woa.com/copilot-chat/copilot_agent/mcp-go/mcp"
 )
 
 // Client implements the MCP client.

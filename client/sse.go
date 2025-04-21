@@ -2,8 +2,9 @@ package client
 
 import (
 	"fmt"
-	"github.com/mark3labs/mcp-go/client/transport"
 	"net/url"
+
+	"git.woa.com/copilot-chat/copilot_agent/mcp-go/client/transport"
 )
 
 func WithHeaders(headers map[string]string) transport.ClientOption {
