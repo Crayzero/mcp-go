@@ -8,9 +8,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"runtime"
 	"sync"
-	"syscall"
 	"time"
 
 	"git.woa.com/copilot-chat/copilot_agent/mcp-go/mcp"
@@ -121,25 +119,8 @@ func (c *Stdio) Close() error {
 	case err := <-errChan:
 		return err
 	case <-time.After(3 * time.Second):
-		if runtime.GOOS == "windows" {
-			return killOnWindows(c.cmd.Process.Pid)
-		}
-		// Send SIGTERM if the process hasn't exited after 3 seconds
-		if err := c.cmd.Process.Signal(syscall.SIGTERM); err != nil {
-			return fmt.Errorf("failed to send SIGTERM: %w", err)
-		}
-
-		// Wait for another 1 second
-		select {
-		case err := <-errChan:
-			return err
-		case <-time.After(1 * time.Second):
-			// Send SIGKILL if the process still hasn't exited
-			if err := c.cmd.Process.Kill(); err != nil {
-				return fmt.Errorf("failed to send SIGKILL: %w", err)
-			}
-			return <-errChan
-		}
+		err := killProcess(c.cmd.Process)
+		return err
 	}
 }
 
