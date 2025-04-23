@@ -1,8 +1,6 @@
 package client
 
 import (
-	"context"
-	"fmt"
 	"io"
 
 	"git.woa.com/copilot-chat/copilot_agent/mcp-go/client/transport"
@@ -19,13 +17,7 @@ func NewStdioMCPClient(
 	env []string,
 	args ...string,
 ) (*Client, error) {
-
 	stdioTransport := transport.NewStdio(command, env, args...)
-	err := stdioTransport.Start(context.Background())
-	if err != nil {
-		return nil, fmt.Errorf("failed to start stdio transport: %w", err)
-	}
-
 	return NewClient(stdioTransport), nil
 }
 

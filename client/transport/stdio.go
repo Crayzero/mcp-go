@@ -58,8 +58,8 @@ func NewStdio(
 	return client
 }
 
-func (c *Stdio) Start(ctx context.Context) error {
-	cmd := exec.CommandContext(ctx, c.command, c.args...)
+func (c *Stdio) Start(_ context.Context) error {
+	cmd := exec.Command(c.command, c.args...)
 
 	mergedEnv := os.Environ()
 	mergedEnv = append(mergedEnv, c.env...)
