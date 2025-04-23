@@ -41,6 +41,10 @@ func TestStdioMCPClient(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create client: %v", err)
 	}
+	err = client.Start(context.Background())
+	if err != nil {
+		t.Fatalf("Failed to start client: %v", err)
+	}
 	var logRecords []map[string]any
 	var logRecordsMu sync.RWMutex
 	var wg sync.WaitGroup
