@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"reflect"
 	"sync"
 	"testing"
 	"time"
@@ -477,4 +478,26 @@ func TestSSEErrors(t *testing.T) {
 		}
 	})
 
+	t.Run("Withheader", func(t *testing.T) {
+		// Create a new SSE transport
+		sse, err := NewSSE("", WithHeaders(map[string]string{
+			"Authorization":   "Bearer abcdef",
+			"X-Custom-Header": "CustomValue",
+		}))
+		if err != nil {
+			t.Fatalf("Failed to create SSE transport: %v", err)
+		}
+		sse.WithHeads(map[string]string{
+			"X-Custom-Header": "CustomValue2",
+			"X-User-Id":       "123",
+		})
+		res := map[string]string{
+			"Authorization":   "Bearer abcdef",
+			"X-Custom-Header": "CustomValue2",
+			"X-User-Id":       "123",
+		}
+		if !reflect.DeepEqual(sse.headers, res) {
+			t.Fatalf("Expected headers %+v, got %+v", res, sse.headers)
+		}
+	})
 }

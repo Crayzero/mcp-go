@@ -14,6 +14,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"maps"
+
 	"git.woa.com/copilot-chat/copilot_agent/mcp-go/mcp"
 )
 
@@ -373,4 +375,10 @@ func (c *SSE) GetEndpoint() *url.URL {
 // GetBaseURL returns the base URL set in the SSE constructor.
 func (c *SSE) GetBaseURL() *url.URL {
 	return c.baseURL
+}
+
+// WithHeads sets custom HTTP headers for the SSE connection.
+// These headers will be included in all requests sent to the server.
+func (c *SSE) WithHeads(headers map[string]string) {
+	maps.Copy(c.headers, headers)
 }
