@@ -377,8 +377,8 @@ func (c *SSE) GetBaseURL() *url.URL {
 	return c.baseURL
 }
 
-// WithHeads sets custom HTTP headers for the SSE connection.
+// WithHeaders sets custom HTTP headers for the SSE connection.
 // These headers will be included in all requests sent to the server.
-func (c *SSE) WithHeads(headers map[string]string) {
+func (c *SSE) WithHeaders(headers map[string]string) {
 	maps.Copy(c.headers, headers)
 }

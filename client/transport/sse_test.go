@@ -478,7 +478,7 @@ func TestSSEErrors(t *testing.T) {
 		}
 	})
 
-	t.Run("Withheader", func(t *testing.T) {
+	t.Run("Withheaders", func(t *testing.T) {
 		// Create a new SSE transport
 		sse, err := NewSSE("", WithHeaders(map[string]string{
 			"Authorization":   "Bearer abcdef",
@@ -487,7 +487,7 @@ func TestSSEErrors(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Failed to create SSE transport: %v", err)
 		}
-		sse.WithHeads(map[string]string{
+		sse.WithHeaders(map[string]string{
 			"X-Custom-Header": "CustomValue2",
 			"X-User-Id":       "123",
 		})
