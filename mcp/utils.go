@@ -3,6 +3,7 @@ package mcp
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/spf13/cast"
 )
 
@@ -498,6 +499,9 @@ func ParseGetPromptResult(rawMessage *json.RawMessage) (*GetPromptResult, error)
 }
 
 func ParseCallToolResult(rawMessage *json.RawMessage) (*CallToolResult, error) {
+	if rawMessage == nil {
+		return nil, fmt.Errorf("rawMessage is nil")
+	}
 	var jsonContent map[string]any
 	if err := json.Unmarshal(*rawMessage, &jsonContent); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal response: %w", err)
