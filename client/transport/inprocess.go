@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/mark3labs/mcp-go/mcp"
-	"github.com/mark3labs/mcp-go/server"
+	"git.woa.com/copilot-chat/copilot_agent/mcp-go/mcp"
+	"git.woa.com/copilot-chat/copilot_agent/mcp-go/server"
 )
 
 type InProcessTransport struct {
