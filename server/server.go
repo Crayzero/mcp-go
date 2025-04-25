@@ -1,4 +1,4 @@
-// Package server provides MCP (Model Control Protocol) server implementations.
+// Package server provides MCP (Model Context Protocol) server implementations.
 package server
 
 import (
@@ -138,7 +138,7 @@ var (
 // NotificationHandlerFunc handles incoming notifications.
 type NotificationHandlerFunc func(ctx context.Context, notification mcp.JSONRPCNotification)
 
-// MCPServer implements a Model Control Protocol server that can handle various types of requests
+// MCPServer implements a Model Context Protocol server that can handle various types of requests
 // including resources, prompts, and tools.
 type MCPServer struct {
 	// Separate mutexes for different resource types
@@ -419,6 +419,12 @@ func (s *MCPServer) AddResource(
 		resource: resource,
 		handler:  handler,
 	}
+
+	// When the list of available resources changes, servers that declared the listChanged capability SHOULD send a notification
+	if s.capabilities.resources.listChanged {
+		// Send notification to all initialized sessions
+		s.SendNotificationToAllClients(mcp.MethodNotificationResourcesListChanged, nil)
+	}
 }
 
 // RemoveResource removes a resource from the server
@@ -450,6 +456,12 @@ func (s *MCPServer) AddResourceTemplate(
 		template: template,
 		handler:  handler,
 	}
+
+	// When the list of available resources changes, servers that declared the listChanged capability SHOULD send a notification
+	if s.capabilities.resources.listChanged {
+		// Send notification to all initialized sessions
+		s.SendNotificationToAllClients(mcp.MethodNotificationResourcesListChanged, nil)
+	}
 }
 
 // AddPrompt registers a new prompt handler with the given name
@@ -464,6 +476,12 @@ func (s *MCPServer) AddPrompt(prompt mcp.Prompt, handler PromptHandlerFunc) {
 	defer s.promptsMu.Unlock()
 	s.prompts[prompt.Name] = prompt
 	s.promptHandlers[prompt.Name] = handler
+
+	// When the list of available resources changes, servers that declared the listChanged capability SHOULD send a notification.
+	if s.capabilities.prompts.listChanged {
+		// Send notification to all initialized sessions
+		s.SendNotificationToAllClients(mcp.MethodNotificationPromptsListChanged, nil)
+	}
 }
 
 // AddTool registers a new tool and its handler
@@ -485,8 +503,11 @@ func (s *MCPServer) AddTools(tools ...ServerTool) {
 	}
 	s.toolsMu.Unlock()
 
-	// Send notification to all initialized sessions
-	s.SendNotificationToAllClients("notifications/tools/list_changed", nil)
+	// When the list of available tools changes, servers that declared the listChanged capability SHOULD send a notification.
+	if s.capabilities.tools.listChanged {
+		// Send notification to all initialized sessions
+		s.SendNotificationToAllClients(mcp.MethodNotificationToolsListChanged, nil)
+	}
 }
 
 // SetTools replaces all existing tools with the provided list
@@ -505,8 +526,11 @@ func (s *MCPServer) DeleteTools(names ...string) {
 	}
 	s.toolsMu.Unlock()
 
-	// Send notification to all initialized sessions
-	s.SendNotificationToAllClients("notifications/tools/list_changed", nil)
+	// When the list of available tools changes, servers that declared the listChanged capability SHOULD send a notification.
+	if s.capabilities.tools.listChanged {
+		// Send notification to all initialized sessions
+		s.SendNotificationToAllClients(mcp.MethodNotificationToolsListChanged, nil)
+	}
 }
 
 // AddNotificationHandler registers a new handler for incoming notifications
@@ -737,7 +761,7 @@ func (s *MCPServer) handleReadResource(
 
 	return nil, &requestError{
 		id:   id,
-		code: mcp.INVALID_PARAMS,
+		code: mcp.RESOURCE_NOT_FOUND,
 		err:  fmt.Errorf("handler not found for resource URI '%s': %w", request.Params.URI, ErrResourceNotFound),
 	}
 }

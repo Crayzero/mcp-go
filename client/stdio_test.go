@@ -51,7 +51,13 @@ func TestStdioMCPClient(t *testing.T) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		dec := json.NewDecoder(GetStderr(client))
+
+		stderr, ok := GetStderr(client)
+		if !ok {
+			return
+		}
+
+		dec := json.NewDecoder(stderr)
 		for {
 			var record map[string]any
 			if err := dec.Decode(&record); err != nil {
