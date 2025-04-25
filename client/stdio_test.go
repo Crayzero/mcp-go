@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"sync"
 	"testing"
 	"time"
@@ -32,6 +33,9 @@ func compileTestServer(outputPath string) error {
 func TestStdioMCPClient(t *testing.T) {
 	// Compile mock server
 	mockServerPath := filepath.Join(os.TempDir(), "mockstdio_server")
+	if runtime.GOOS == "windows" {
+		mockServerPath += ".exe"
+	}
 	if err := compileTestServer(mockServerPath); err != nil {
 		t.Fatalf("Failed to compile mock server: %v", err)
 	}
