@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 	"syscall"
 	"time"
@@ -34,4 +35,15 @@ func killProcess(proc *os.Process) error {
 
 	// if the process is still running, kill it
 	return proc.Kill()
+}
+
+func setProcessAttributes(cmd *exec.Cmd) {
+	// Set the process attributes to inherit the job object
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true,
+	}
+}
+
+func assignJob(cmd *exec.Cmd) error {
+	return nil
 }
