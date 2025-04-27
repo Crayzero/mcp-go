@@ -79,6 +79,11 @@ func (c *Client) Close() error {
 	return c.transport.Close()
 }
 
+// ForceClose shuts down the client and closes the transport without waiting for any pending requests or notifications.
+func (c *Client) ForceClose() error {
+	return c.transport.ForceClose()
+}
+
 // OnNotification registers a handler function to be called when notifications are received.
 // Multiple handlers can be registered and will be called in the order they were added.
 func (c *Client) OnNotification(
