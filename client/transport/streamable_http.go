@@ -125,6 +125,10 @@ func (c *StreamableHTTP) Close() error {
 	return nil
 }
 
+func (c *StreamableHTTP) ForceClose() error {
+	return c.Close()
+}
+
 const (
 	initializeMethod   = "initialize"
 	headerKeySessionID = "Mcp-Session-Id"
@@ -248,13 +252,13 @@ func (c *StreamableHTTP) handleSSEResponse(ctx context.Context, reader io.ReadCl
 		c.readSSE(ctx, reader, func(event, data string) {
 
 			// (unsupported: batching)
-	
+
 			var message JSONRPCResponse
 			if err := json.Unmarshal([]byte(data), &message); err != nil {
 				fmt.Printf("failed to unmarshal message: %v\n", err)
 				return
 			}
-	
+
 			// Handle notification
 			if message.ID == nil {
 				var notification mcp.JSONRPCNotification
@@ -269,7 +273,7 @@ func (c *StreamableHTTP) handleSSEResponse(ctx context.Context, reader io.ReadCl
 				c.notifyMu.RUnlock()
 				return
 			}
-	
+
 			responseChan <- &message
 		})
 	}()

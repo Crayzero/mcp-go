@@ -323,6 +323,10 @@ func (c *SSE) Close() error {
 	return nil
 }
 
+func (c *SSE) ForceClose() error {
+	return c.Close()
+}
+
 // SendNotification sends a JSON-RPC notification to the server without expecting a response.
 func (c *SSE) SendNotification(ctx context.Context, notification mcp.JSONRPCNotification) error {
 	if c.endpoint == nil {

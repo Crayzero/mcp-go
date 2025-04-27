@@ -24,6 +24,9 @@ type Interface interface {
 
 	// Close the connection.
 	Close() error
+
+	// ForceClose the connection.
+	ForceClose() error
 }
 
 type JSONRPCRequest struct {

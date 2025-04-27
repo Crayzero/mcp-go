@@ -68,3 +68,7 @@ func (c *InProcessTransport) SetNotificationHandler(handler func(notification mc
 func (*InProcessTransport) Close() error {
 	return nil
 }
+
+func (*InProcessTransport) ForceClose() error {
+	return nil
+}

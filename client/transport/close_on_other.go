@@ -34,7 +34,7 @@ func killProcess(proc *os.Process) error {
 	}
 
 	// if the process is still running, kill it
-	return proc.Kill()
+	return syscall.Kill(-proc.Pid, syscall.SIGKILL)
 }
 
 func setProcessAttributes(cmd *exec.Cmd) {

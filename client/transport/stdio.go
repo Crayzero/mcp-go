@@ -108,6 +108,11 @@ func (c *Stdio) Start(_ context.Context) error {
 	return nil
 }
 
+func (c *Stdio) ForceClose() error {
+	killProcess(c.cmd.Process)
+	return nil
+}
+
 // Close shuts down the stdio client, closing the stdin pipe and waiting for the subprocess to exit.
 // Returns an error if there are issues closing stdin or waiting for the subprocess to terminate.
 func (c *Stdio) Close() error {
