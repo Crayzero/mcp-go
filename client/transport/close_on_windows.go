@@ -151,6 +151,8 @@ func setProcessAttributes(cmd *exec.Cmd) {
 	// Set the process attributes to inherit the job object
 	cmd.SysProcAttr = &windows.SysProcAttr{
 		HideWindow: true,
+		// Set the job object to inherit the process
+		CreationFlags: windows.CREATE_BREAKAWAY_FROM_JOB,
 	}
 }
 
