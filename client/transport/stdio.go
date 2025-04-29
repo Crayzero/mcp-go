@@ -84,7 +84,7 @@ func (c *Stdio) Start(_ context.Context) error {
 	c.stderr = stderr
 	c.stdout = bufio.NewReader(stdout)
 
-	// linux 下需要设置进程属性
+	// linux/windows 下需要设置进程属性
 	setProcessAttributes(cmd)
 
 	if err := cmd.Start(); err != nil {
@@ -94,7 +94,7 @@ func (c *Stdio) Start(_ context.Context) error {
 	// windows 下需要放到一个job里面去
 	err = assignJob(cmd)
 	if err != nil {
-		return fmt.Errorf("failed to assign job: %v", err)
+		fmt.Printf("failed to assign job: %v\n", err)
 	}
 
 	// Start reading responses in a goroutine and wait for it to be ready
