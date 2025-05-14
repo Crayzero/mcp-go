@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime"
 	"net/http"
 	"net/url"
 	"strings"
@@ -134,7 +135,7 @@ const (
 	headerKeySessionID = "Mcp-Session-Id"
 )
 
-// sendRequest sends a JSON-RPC request to the server and waits for a response.
+// SendRequest sends a JSON-RPC request to the server and waits for a response.
 // Returns the raw JSON response message or an error if the request fails.
 func (c *StreamableHTTP) SendRequest(
 	ctx context.Context,
@@ -210,7 +211,8 @@ func (c *StreamableHTTP) SendRequest(
 	}
 
 	// Handle different response types
-	switch resp.Header.Get("Content-Type") {
+	mediaType, _, _ := mime.ParseMediaType(resp.Header.Get("Content-Type"))
+	switch mediaType {
 	case "application/json":
 		// Single response
 		var response JSONRPCResponse
@@ -358,6 +360,7 @@ func (c *StreamableHTTP) SendNotification(ctx context.Context, notification mcp.
 
 	// Set headers
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json, text/event-stream")
 	if sessionID := c.sessionID.Load(); sessionID != "" {
 		req.Header.Set(headerKeySessionID, sessionID.(string))
 	}

@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 
 	"git.woa.com/copilot-chat/copilot_agent/mcp-go/client/transport"
@@ -9,6 +10,10 @@ import (
 
 func WithHeaders(headers map[string]string) transport.ClientOption {
 	return transport.WithHeaders(headers)
+}
+
+func WithHTTPClient(httpClient *http.Client) transport.ClientOption {
+	return transport.WithHTTPClient(httpClient)
 }
 
 // NewSSEMCPClient creates a new SSE-based MCP client with the given base URL.

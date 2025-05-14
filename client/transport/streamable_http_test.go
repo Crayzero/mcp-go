@@ -46,11 +46,14 @@ func startMockStreamableHTTPServer() (string, func()) {
 			w.Header().Set("Mcp-Session-Id", sessionID)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusAccepted)
-			json.NewEncoder(w).Encode(map[string]interface{}{
+			if err := json.NewEncoder(w).Encode(map[string]any{
 				"jsonrpc": "2.0",
 				"id":      request["id"],
 				"result":  "initialized",
-			})
+			}); err != nil {
+				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+				return
+			}
 
 		case "debug/echo":
 			// Check session ID
@@ -62,11 +65,14 @@ func startMockStreamableHTTPServer() (string, func()) {
 			// Echo back the request as the response result
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			json.NewEncoder(w).Encode(map[string]interface{}{
+			if err := json.NewEncoder(w).Encode(map[string]any{
 				"jsonrpc": "2.0",
 				"id":      request["id"],
 				"result":  request,
-			})
+			}); err != nil {
+				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+				return
+			}
 
 		case "debug/echo_notification":
 			// Check session ID
@@ -104,14 +110,17 @@ func startMockStreamableHTTPServer() (string, func()) {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			data, _ := json.Marshal(request)
-			json.NewEncoder(w).Encode(map[string]interface{}{
+			if err := json.NewEncoder(w).Encode(map[string]any{
 				"jsonrpc": "2.0",
 				"id":      request["id"],
-				"error": map[string]interface{}{
+				"error": map[string]any{
 					"code":    -1,
 					"message": string(data),
 				},
-			})
+			}); err != nil {
+				http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+				return
+			}
 		}
 	})
 
@@ -152,9 +161,9 @@ func TestStreamableHTTP(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		params := map[string]interface{}{
+		params := map[string]any{
 			"string": "hello world",
-			"array":  []interface{}{1, 2, 3},
+			"array":  []any{1, 2, 3},
 		}
 
 		request := JSONRPCRequest{
@@ -172,10 +181,10 @@ func TestStreamableHTTP(t *testing.T) {
 
 		// Parse the result to verify echo
 		var result struct {
-			JSONRPC string                 `json:"jsonrpc"`
-			ID      int64                  `json:"id"`
-			Method  string                 `json:"method"`
-			Params  map[string]interface{} `json:"params"`
+			JSONRPC string         `json:"jsonrpc"`
+			ID      int64          `json:"id"`
+			Method  string         `json:"method"`
+			Params  map[string]any `json:"params"`
 		}
 
 		if err := json.Unmarshal(response.Result, &result); err != nil {
@@ -197,7 +206,7 @@ func TestStreamableHTTP(t *testing.T) {
 			t.Errorf("Expected string 'hello world', got %v", result.Params["string"])
 		}
 
-		if arr, ok := result.Params["array"].([]interface{}); !ok || len(arr) != 3 {
+		if arr, ok := result.Params["array"].([]any); !ok || len(arr) != 3 {
 			t.Errorf("Expected array with 3 items, got %v", result.Params["array"])
 		}
 	})
@@ -295,7 +304,7 @@ func TestStreamableHTTP(t *testing.T) {
 					JSONRPC: "2.0",
 					ID:      int64(100 + idx),
 					Method:  "debug/echo",
-					Params: map[string]interface{}{
+					Params: map[string]any{
 						"requestIndex": idx,
 						"timestamp":    time.Now().UnixNano(),
 					},
@@ -325,10 +334,10 @@ func TestStreamableHTTP(t *testing.T) {
 
 			// Parse the result to verify echo
 			var result struct {
-				JSONRPC string                 `json:"jsonrpc"`
-				ID      int64                  `json:"id"`
-				Method  string                 `json:"method"`
-				Params  map[string]interface{} `json:"params"`
+				JSONRPC string         `json:"jsonrpc"`
+				ID      int64          `json:"id"`
+				Method  string         `json:"method"`
+				Params  map[string]any `json:"params"`
 			}
 
 			if err := json.Unmarshal(responses[i].Result, &result); err != nil {

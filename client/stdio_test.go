@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"runtime"
 	"sync"
 	"testing"
@@ -20,24 +19,41 @@ func compileTestServer(outputPath string) error {
 	cmd := exec.Command(
 		"go",
 		"build",
+		"-buildmode=pie",
 		"-o",
 		outputPath,
 		"../testdata/mockstdio_server.go",
 	)
+	tmpCache, _ := os.MkdirTemp("", "gocache")
+	cmd.Env = append(os.Environ(), "GOCACHE="+tmpCache)
+
 	if output, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("compilation failed: %v\nOutput: %s", err, output)
+	}
+	// Verify the binary was actually created
+	if _, err := os.Stat(outputPath); os.IsNotExist(err) {
+		return fmt.Errorf("mock server binary not found at %s after compilation", outputPath)
 	}
 	return nil
 }
 
 func TestStdioMCPClient(t *testing.T) {
-	// Compile mock server
-	mockServerPath := filepath.Join(os.TempDir(), "mockstdio_server")
+	// Create a temporary file for the mock server
+	tempFile, err := os.CreateTemp("", "mockstdio_server")
+	if err != nil {
+		t.Fatalf("Failed to create temp file: %v", err)
+	}
+	tempFile.Close()
+	mockServerPath := tempFile.Name()
+
+	// Add .exe suffix on Windows
 	if runtime.GOOS == "windows" {
+		os.Remove(mockServerPath) // Remove the empty file first
 		mockServerPath += ".exe"
 	}
-	if err := compileTestServer(mockServerPath); err != nil {
-		t.Fatalf("Failed to compile mock server: %v", err)
+
+	if compileErr := compileTestServer(mockServerPath); compileErr != nil {
+		t.Fatalf("Failed to compile mock server: %v", compileErr)
 	}
 	defer os.Remove(mockServerPath)
 
@@ -220,7 +236,7 @@ func TestStdioMCPClient(t *testing.T) {
 
 		request := mcp.CallToolRequest{}
 		request.Params.Name = "test-tool"
-		request.Params.Arguments = map[string]interface{}{
+		request.Params.Arguments = map[string]any{
 			"param1": "value1",
 		}
 
